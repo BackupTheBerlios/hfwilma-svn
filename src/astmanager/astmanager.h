@@ -17,26 +17,32 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */   
 
+#ifndef ASTMANAGER_H
+#define ASTMANAGER_H
+#include <QObject>
+#include <QString>
+#include <QTcpSocket>
 
-#include <QWidget>
-#include <QSystemTrayIcon>
+enum StateType
+  {
+    logedoff,
+    logedin
+  };
 
-//class QSystemTrayIcon;
-
-class MainWidget : public QWidget
+class AstManager : public QObject
 {
   Q_OBJECT;
-
  public:
-  MainWidget();
- 
-  private slots:
-    void iconActivated(QSystemTrayIcon::ActivationReason reason);
- 
+   AstManager();
+ public slots:
+   void connect(QString host, int port);
+   void login( QString username, QString secret);
+   void logoff();
  private:
-  QSystemTrayIcon * trayIcon;
-  void closeEvent(QCloseEvent *event);
- 
-  void setIcon(int index);
+  
+  StateType state;
+  QTcpSocket *tcpSocket;
   
 };
+
+#endif

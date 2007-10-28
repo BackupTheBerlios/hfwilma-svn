@@ -3,10 +3,16 @@ TARGET   = hfwilma
 
 SOURCES  = \
            main.cpp  \
-           mainwidget.cpp
+           gui/mainwidget.cpp  \
+#           astmanager/astmanager.cpp \
+#           data/connection.cpp \
+#           data/connections.cpp
 
 HEADERS  = \
-           mainwidget.h
+           gui/mainwidget.h \
+#           astmanager/astmanager.h\   
+#           data/connection.h \
+#           data/connections.h
 
 RESOURCES= src.qrc
 include(../hfwilma.pri)

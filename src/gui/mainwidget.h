@@ -17,23 +17,30 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */   
 
-#include <QtGui>
+#ifndef MAINWIDGET_H
+#define MAINWIDGET_H
 
-#include "gui/mainwidget.h"
+#include <QWidget>
+#include <QSystemTrayIcon>
 
-int main(int argc, char *argv[])
+//class QSystemTrayIcon;
+
+class MainWidget : public QWidget
 {
-  QApplication app(argc, argv);
-  
-  if (!QSystemTrayIcon::isSystemTrayAvailable()) {
-    QMessageBox::critical(0, QObject::tr("Systray"),
-			  QObject::tr("I couldn't detect any system tray "
-				      "on this system."));
-    return 1;
-  }
+  Q_OBJECT;
 
-  MainWidget mainwidget;
-  mainwidget.hide();
+ public:
+  MainWidget();
+ 
+  private slots:
+    void iconActivated(QSystemTrayIcon::ActivationReason reason);
+ 
+ private:
+  QSystemTrayIcon * trayIcon;
+  void closeEvent(QCloseEvent *event);
+ 
+  void setIcon(int index);
   
-  return app.exec();
-}
+};
+
+#endif // MAINWIDGET_H
