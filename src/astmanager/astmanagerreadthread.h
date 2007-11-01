@@ -17,35 +17,26 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */   
 
-#ifndef ASTMANAGER_H
-#define ASTMANAGER_H
-#include <QObject>
+#ifndef ASTMANAGERREADTHREAD_H
+#define ASTMANAGERREADTHREAD_H
+#include <QThread>
 #include <QString>
 #include <QTcpSocket>
-#include "astmanagerreadthread.h"
 
-enum StateType
-  {
-    logedoff,
-    logedin
-  };
 
-class AstManager : public QObject
+class AstManagerReadThread : public QThread
 {
   Q_OBJECT;
  public:
-   AstManager();
+   AstManagerReadThread(QTcpSocket *);
+ signals:
+   void astDataRecieved(QString);
  public slots:
-   void connect(QString host, int port);
-   void login( QString username, QString secret);
-   void setEventFilter(QString eventmask);
-   void processAstData(QString);
-   void logoff();
+   void run( );
  private:
-  
-  StateType state;
+  void processString(QString);
+  QString cacheString;
   QTcpSocket *tcpSocket;
-  AstManagerReadThread *astReadThread;
   
 };
 

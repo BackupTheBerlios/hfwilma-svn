@@ -30,7 +30,8 @@ AstManager::AstManager()
 {
   state = logedoff;
   tcpSocket = new QTcpSocket(this);
-
+  astReadThread = new AstManagerReadThread(tcpSocket);
+  QObject::connect(astReadThread,SIGNAL(astDataRecieved(QString)),this,SLOT(processAstData(QString)));
 }
 
 void AstManager::connect(QString host, int port) {
@@ -39,52 +40,37 @@ void AstManager::connect(QString host, int port) {
   tcpSocket->connectToHost(host, port);
 
   if (tcpSocket->waitForConnected(1000)) {
-     qDebug("Connected!");
+    astReadThread->start();
+    qDebug("Connected!");
   } else {
-     qDebug("Connection failed!");
+    qDebug("Connection failed!");
   }
 
 }
 
 void AstManager::login(QString username, QString secret){
-
   tcpSocket->write("Action: login\r\n");
   tcpSocket->write(QString("Username: "+username+"\r\n").toAscii());
   tcpSocket->write(QString("Secret: "+secret+"\r\n").toAscii());
   tcpSocket->write("\r\n");
-  tcpSocket->flush();
-  QStringList lines;
-  bool endofconv=false;
-  QRegExp rexEoc(".*\n\n$");
-  rexEoc.setPatternSyntax(QRegExp::RegExp2);
-  QTextCodec *codec = QTextCodec::codecForName("IBM 850");
+}
 
-  while(tcpSocket->waitForReadyRead(3000) || endofconv) {
-    qDebug () << tcpSocket->bytesAvailable();
-
-    QByteArray encodedString = tcpSocket->readAll();
-    encodedString.replace("\r","");
-    QString line = codec->toUnicode(encodedString);
-    lines << line;
-    endofconv=rexEoc.exactMatch(line);
-
-    //    QRegExp rx("^(.*):(.*)$");
-    //if (rx.exactMatch(line)){
-    //  qDebug() << rx.pos(0);
-    //  qDebug() << rx.pos(1);
-    //  state = logedin;
-    //}
-  }
-  //  delete codec;
-    qDebug() << lines;
-    qDebug() << endofconv;
- 
+void AstManager::setEventFilter(QString eventmask){
+  tcpSocket->write("Action: events\r\n");
+  tcpSocket->write(QString("Eventmask: "+eventmask+"\r\n").toAscii());
+  tcpSocket->write("\r\n");
 }
 
 
 void AstManager::logoff() {
-  state = logedoff;
   tcpSocket->write("Action: logoff\r\n");
   tcpSocket->write("\r\n");
 }
 
+
+void AstManager::processAstData(QString str) {
+  
+  qDebug () << "AstData: " << str;
+  
+
+}
