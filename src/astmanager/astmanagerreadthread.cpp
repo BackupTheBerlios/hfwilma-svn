@@ -36,10 +36,10 @@ AstManagerReadThread::AstManagerReadThread(QTcpSocket* ltcpSocket)
 
 
 void AstManagerReadThread::processString(QString str) {
-  qDebug () << "Size" << str.size();
+  //qDebug () << "Size" << str.size();
   for (int i = 0; i < str.size(); ++i) {
     if (cacheString.endsWith("\n") && str.at(i) == QChar('\n')){
-      qDebug() << cacheString;
+      //qDebug() << cacheString;
       emit astDataRecieved(cacheString);
       cacheString.clear();
     } else {
@@ -54,7 +54,7 @@ void AstManagerReadThread::run(){
   QTextCodec *codec = QTextCodec::codecForName("IBM 850");
 
   while(tcpSocket->waitForReadyRead(-1)) {
-    qDebug () << tcpSocket->bytesAvailable();
+    //qDebug () << tcpSocket->bytesAvailable();
 
     QByteArray encodedString = tcpSocket->readAll();
     encodedString.replace("\r","");

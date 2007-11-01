@@ -25,7 +25,6 @@
 #include <QRegExp>
 #include "astmanager.h"
 
-
 AstManager::AstManager()
 {
   state = logedoff;
@@ -69,8 +68,52 @@ void AstManager::logoff() {
 
 
 void AstManager::processAstData(QString str) {
-  
-  qDebug () << "AstData: " << str;
-  
+  //qDebug () << "AstData: " << str;
 
+    QStringList lines = str.split("\n");
+    //qDebug() << lines;
+
+    QHash<QString, QString> strHash;
+    QStringListIterator linesIterator(lines);
+    while (linesIterator.hasNext()) {
+       QStringList fields = linesIterator.next().split(": ");
+       if (fields.size() == 2) {
+	 strHash[fields.at(0).toLower()]= fields.at(1).toLower();
+       }
+    }
+      
+    //  qDebug() << "Hash: " << strHash;
+
+    if (strHash.contains("event")) {
+      if (strHash.value("event") == "newchannel") {
+	channelsHash.insert(strHash.value("uniqueid"), new Channel(strHash));
+	emit newChannel();
+	qDebug() << "Newchannel: " <<  strHash.value("uniqueid");
+      } else if (strHash.value("event") == "newstate") {
+	emit newState();
+	qDebug() << "Newstate  : " <<  strHash.value("uniqueid");
+      } else if (strHash.value("event") == "newexten") {
+	emit newextension();
+	qDebug() << "Newextension : " <<  strHash.value("newexten");
+      } else if (strHash.value("event") == "dial") {
+	Channel *srcchannel = channelsHash.value(strHash.value("srcuniqueid"));
+	Channel *destchannel = channelsHash.value(strHash.value("destuniqueid"));
+						 
+	emit dial(srcchannel->getName() + " ruft " + destchannel->getName());
+	qDebug() << "Dial      : " << strHash.value("srcuniqueid") 
+                           << "->" << strHash.value("destuniqueid");
+	qDebug() <<              srcchannel->getName() + "(" +srcchannel->getCallerid() + ") ruft " + destchannel->getName() + "(" +destchannel->getCallerid() + ")";
+      } else if (strHash.value("event") == "link") {
+	emit link("");
+	qDebug() << "Link      : " << strHash.value("uniqueid1") << "->" << strHash.value("Uniqueid2");
+      } else if (strHash.value("event") == "hangup") {
+	Channel *channel = channelsHash.value(strHash.value("uniqueid"));
+	channelsHash.remove(strHash.value("uniqueid"));
+	delete channel;
+	emit hangup("");
+	qDebug() << "Hangup    : " <<  strHash.value("uniqueid");
+      }
+    }  
 }
+
+

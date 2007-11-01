@@ -17,44 +17,29 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */   
 
-#ifndef ASTMANAGER_H
-#define ASTMANAGER_H
+#ifndef CHANNEL_H
+#define CHANNEL_H
 #include <QObject>
+#include <QList>
 #include <QString>
-#include <QTcpSocket>
-#include "astmanagerreadthread.h"
-#include "../data/channel.h"
+#include <QHash>
 
-enum StateType
-  {
-    logedoff,
-    logedin
-  };
-
-class AstManager : public QObject
+class Channel : public QObject
 {
   Q_OBJECT;
  public:
-   AstManager();
- signals:
-   void newChannel();
-   void newState();
-   void newextension();
-   void dial(QString);
-   void link(QString);
-   void hangup(QString);
- public slots:
-   void connect(QString host, int port);
-   void login( QString username, QString secret);
-   void setEventFilter(QString eventmask);
-   void processAstData(QString);
-   void logoff();
+  Channel(QHash<QString, QString>);
+  QString getName();
+  QString getCallerid();
  private:
-   QHash<QString,Channel*> channelsHash;
-   StateType state;
-   QTcpSocket *tcpSocket;
-   AstManagerReadThread *astReadThread;
-  
+  QHash<QString,QString> data; 
+  /*QString name;
+  QString uniqueid;
+  QString callerIDName;
+  QString callerID;
+  QString state;
+  QString privilege;
+  */
 };
 
 #endif

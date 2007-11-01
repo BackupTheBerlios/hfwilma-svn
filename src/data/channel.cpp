@@ -1,3 +1,4 @@
+
 /*
     hfWilma, connecting the desktop with asterisk 
     Copyright (C) 2007 Marc Feld
@@ -17,44 +18,19 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */   
 
-#ifndef ASTMANAGER_H
-#define ASTMANAGER_H
-#include <QObject>
-#include <QString>
-#include <QTcpSocket>
-#include "astmanagerreadthread.h"
-#include "../data/channel.h"
+#include <QHash>
+#include "channel.h"
 
-enum StateType
-  {
-    logedoff,
-    logedin
-  };
-
-class AstManager : public QObject
+Channel::Channel(QHash<QString,QString> ldata)
 {
-  Q_OBJECT;
- public:
-   AstManager();
- signals:
-   void newChannel();
-   void newState();
-   void newextension();
-   void dial(QString);
-   void link(QString);
-   void hangup(QString);
- public slots:
-   void connect(QString host, int port);
-   void login( QString username, QString secret);
-   void setEventFilter(QString eventmask);
-   void processAstData(QString);
-   void logoff();
- private:
-   QHash<QString,Channel*> channelsHash;
-   StateType state;
-   QTcpSocket *tcpSocket;
-   AstManagerReadThread *astReadThread;
-  
-};
+  data = ldata;
+}
 
-#endif
+QString Channel::getName() {
+  
+  return data.value("channel");
+}
+
+QString Channel::getCallerid() {
+  return data.value("callerid");
+}
