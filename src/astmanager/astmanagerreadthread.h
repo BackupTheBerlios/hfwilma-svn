@@ -28,13 +28,15 @@ class AstManagerReadThread : public QThread
 {
   Q_OBJECT;
  public:
-   AstManagerReadThread(QTcpSocket *);
+   AstManagerReadThread();
  signals:
    void astDataRecieved(QString);
  public slots:
-   void run( );
+   void run();
+ void connectAst(QString , int );
+ void writeString(QString);
+  void readString();
  private:
-  void processString(QString);
   QString cacheString;
   QTcpSocket *tcpSocket;
   

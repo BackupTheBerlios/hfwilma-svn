@@ -23,8 +23,8 @@
 #include <QString>
 #include <QTcpSocket>
 #include "astmanagerreadthread.h"
-#include "../data/channel.h"
-#include "../data/connection.h"
+#include "channel.h"
+#include "connection.h"
 
 enum StateType
   {
@@ -38,17 +38,21 @@ class AstManager : public QObject
  public:
    AstManager();
  signals:
+   void writeString(QString);
    void newChannel();
    void newState();
    void newextension();
    void dial(QString);
    void link(QString);
    void hangup(QString);
+   void somethingChanged();
+   void connectChange(QString,int);  
  public slots:
-   void connect(QString host, int port);
-   void login( QString username, QString secret);
-   void setEventFilter(QString eventmask);
+   void connectAst(QString , int );
+   void login( QString , QString );
+   void setEventFilter(QString );
    void processAstData(QString);
+   QHash<QString,Channel*> getChannelHash();
    void logoff();
  private:
    ChannelState convertToChannelState(QString mystateString);

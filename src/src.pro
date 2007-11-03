@@ -1,18 +1,27 @@
 TEMPLATE = app
 TARGET   = hfwilma
 
+QT += network
+CONFIG += debug qtestlib
+INCLUDEPATH += . astmanager data gui
+
 SOURCES  = \
            main.cpp  \
+           astmanager/astmanager.cpp \
+           astmanager/astmanagerreadthread.cpp \
+           data/channel.cpp \
+           data/connection.cpp \
            gui/mainwidget.cpp  \
-#           astmanager/astmanager.cpp \
-#           data/connection.cpp \
-#           data/connections.cpp
 
 HEADERS  = \
+           astmanager/astmanager.h \
+           astmanager/astmanagerreadthread.h \
+           data/channel.h \
+           data/connection.h \
            gui/mainwidget.h \
-#           astmanager/astmanager.h\   
-#           data/connection.h \
-#           data/connections.h
+
+FORMS = \
+        forms/channelwidget.ui
 
 RESOURCES= src.qrc
 include(../hfwilma.pri)

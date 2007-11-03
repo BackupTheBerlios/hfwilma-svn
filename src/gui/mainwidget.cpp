@@ -26,6 +26,7 @@
 #include <QPainter>
 
 
+
 MainWidget::MainWidget()
 {
   
@@ -34,8 +35,15 @@ MainWidget::MainWidget()
  connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
              this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
  trayIcon->show();
-
  
+ astmanager = new AstManager();
+
+ astmanager->connectAst("localhost",5038);
+ astmanager->login("mfeld","");
+ //astManager.logoff();
+ astmanager->setEventFilter("on");
+ 
+ connect(astmanager,SIGNAL(somethingChanged()),this,SLOT(genToolTip()),Qt::DirectConnection);
 }
 
 
@@ -81,4 +89,21 @@ void MainWidget::closeEvent(QCloseEvent *event)
          hide();
          event->ignore();
      }
+}
+
+void MainWidget::genToolTip() {
+  QString tooltip;
+  QHash<QString,Channel*> channelHash = astmanager->getChannelHash();
+  
+  QHashIterator<QString,Channel*> i(channelHash);
+  
+  while (i.hasNext()) {
+    i.next();
+    //    cout << i.key() << ": " << i.value() << endl;
+    Channel *channel = i.value();
+    tooltip += channel->getName() + "\n";
+  }
+  
+  qDebug()<< "Tooltip" << tooltip;
+  trayIcon->setToolTip(tooltip);
 }

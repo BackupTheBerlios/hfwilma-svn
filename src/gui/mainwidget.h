@@ -22,6 +22,8 @@
 
 #include <QWidget>
 #include <QSystemTrayIcon>
+#include "astmanager.h"
+
 
 //class QSystemTrayIcon;
 
@@ -34,12 +36,13 @@ class MainWidget : public QWidget
  
   private slots:
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
- 
+  void genToolTip();
  private:
   QSystemTrayIcon * trayIcon;
   void closeEvent(QCloseEvent *event);
  
   void setIcon(int index);
+  AstManager *astmanager;
   
 };
 

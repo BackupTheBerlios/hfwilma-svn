@@ -26,17 +26,23 @@
 #include "astmanager.h"
 
 
-AstManagerReadThread::AstManagerReadThread(QTcpSocket* ltcpSocket)
+AstManagerReadThread::AstManagerReadThread()
 {
-  tcpSocket   = ltcpSocket;
+  tcpSocket = new QTcpSocket(this);
+  connect(tcpSocket,SIGNAL(readyRead()),this,SLOT(readString()));
+
+  qDebug() << "renderthread";
   cacheString.clear();
 }
 
 
 
 
-void AstManagerReadThread::processString(QString str) {
+void AstManagerReadThread::readString() {
   //qDebug () << "Size" << str.size();
+  QByteArray str = tcpSocket->readAll();
+  str.replace("\r","");
+
   for (int i = 0; i < str.size(); ++i) {
     if (cacheString.endsWith("\n") && str.at(i) == QChar('\n')){
       //qDebug() << cacheString;
@@ -48,24 +54,42 @@ void AstManagerReadThread::processString(QString str) {
   }
 }
 
+void AstManagerReadThread::writeString(QString str) {
+  tcpSocket->write(str.toAscii());
+}
 
-void AstManagerReadThread::run(){
+void AstManagerReadThread::connectAst(QString host, int port) {
+  
+  tcpSocket->abort();
+  tcpSocket->connectToHost(host, port);
 
-  QTextCodec *codec = QTextCodec::codecForName("IBM 850");
-
-  while(tcpSocket->waitForReadyRead(-1)) {
-    //qDebug () << tcpSocket->bytesAvailable();
-
-    QByteArray encodedString = tcpSocket->readAll();
-    encodedString.replace("\r","");
-
-    QString decodedString = codec->toUnicode(encodedString);
-    
-    processString(decodedString);
-    
+  if (tcpSocket->waitForConnected(1000)) {
+    qDebug("Connected!");
+  } else {
+    qDebug("Connection failed!");
   }
 
- 
 }
 
 
+
+void AstManagerReadThread::run(){
+ 
+
+  exec();
+ 
+}
+
+/*{
+  qDebug() << "blub";
+  qDebug() << tcpSocket->readBufferSize ();
+  while(tcpSocket->waitForReadyRead(-1)) {
+      //qDebug () << tcpSocket->bytesAvailable();
+      
+
+      //QString decodedString = codec->toUnicode(encodedString);
+      
+      processString(encodedString);
+      
+    }
+*/

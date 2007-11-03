@@ -28,42 +28,38 @@
 AstManager::AstManager()
 {
   state = logedoff;
-  tcpSocket = new QTcpSocket(this);
-  astReadThread = new AstManagerReadThread(tcpSocket);
-  QObject::connect(astReadThread,SIGNAL(astDataRecieved(QString)),this,SLOT(processAstData(QString)));
-}
+  astReadThread = new AstManagerReadThread();
+  astReadThread->start();
 
-void AstManager::connect(QString host, int port) {
-  
-  tcpSocket->abort();
-  tcpSocket->connectToHost(host, port);
-
-  if (tcpSocket->waitForConnected(1000)) {
-    astReadThread->start();
-    qDebug("Connected!");
-  } else {
-    qDebug("Connection failed!");
+  while (!astReadThread->isRunning()) {
+    usleep(1000);
   }
+  connect(this,SIGNAL(connectChange(QString,int)),astReadThread,SLOT(connectAst(QString,int)));
+  connect(this,SIGNAL(writeString(QString)),astReadThread,SLOT(writeString(QString)));
+  connect(astReadThread,SIGNAL(astDataRecieved(QString)),this,SLOT(processAstData(QString)));
 
+}
+void AstManager::connectAst(QString host, int port) {
+  emit connectChange(host,port);
 }
 
 void AstManager::login(QString username, QString secret){
-  tcpSocket->write("Action: login\r\n");
-  tcpSocket->write(QString("Username: "+username+"\r\n").toAscii());
-  tcpSocket->write(QString("Secret: "+secret+"\r\n").toAscii());
-  tcpSocket->write("\r\n");
+  emit writeString("Action: login\r\n");
+  emit writeString("Username: "+username+"\r\n");
+  emit writeString(QString("Secret: "+secret+"\r\n"));
+  emit writeString("\r\n");
 }
 
 void AstManager::setEventFilter(QString eventmask){
-  tcpSocket->write("Action: events\r\n");
-  tcpSocket->write(QString("Eventmask: "+eventmask+"\r\n").toAscii());
-  tcpSocket->write("\r\n");
+  emit writeString("Action: events\r\n");
+  emit writeString("Eventmask: "+eventmask+"\r\n");
+  emit writeString("\r\n");
 }
 
 
 void AstManager::logoff() {
-  tcpSocket->write("Action: logoff\r\n");
-  tcpSocket->write("\r\n");
+  emit writeString("Action: logoff\r\n");
+  emit writeString("\r\n");
 }
 
 
@@ -82,7 +78,7 @@ void AstManager::processAstData(QString str) {
        }
     }
       
-    //  qDebug() << "Hash: " << strHash;
+     qDebug() << "Hash: " << strHash;
 
     if (strHash.contains("event")) {
       if (strHash.value("event") == "newchannel") {
@@ -135,7 +131,11 @@ void AstManager::processAstData(QString str) {
 	delete channel;
       }
     }
-     
+    emit somethingChanged();
+}
+
+QHash<QString,Channel*> AstManager::getChannelHash(){
+  return channelsHash;
 }
 
 ChannelState AstManager::convertToChannelState(QString mystateString){
@@ -151,7 +151,7 @@ ChannelState AstManager::convertToChannelState(QString mystateString){
   } else if (mystateString == "down") {
     state = down;
   } else {
-    qWaring() << "unknown ChannelState" << mystateString;
+    qWarning() << "unknown ChannelState" << mystateString;
   } 
 
   qDebug() << "new Channel state" << mystateString;
