@@ -17,56 +17,41 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */   
 
-#ifndef CHANNEL_H
-#define CHANNEL_H
+#ifndef CONNECTION_H
+#define CONNECTION_H
 #include <QObject>
+#include <QList>
 #include <QString>
-#include "connection.h"
 
-enum ChannelState
-  {
-    undef,
-    rsrvd,
-    dailing,
-    ringing,
-    up,
-    down
-  };
+class Channel;
 
-class Channel : public QObject
+namespace ConnectionNsp {
+  enum state
+    {
+      undef,
+      dail,
+      link,
+      hangedup,
+      muted
+    };
+}
+
+class Connection : public QObject
 {
   Q_OBJECT;
  public:
-  Channel();
-  ~Channel();
-  void setName(QString lname);
-  QString getName();
+  Connection(Channel *, Channel *, ConnectionNsp::state );
+  Channel *getSourceChannelPtr();
 
-  void setUniqueID(QString lname);
-  QString getUniqueID();
-
-  void setCallerIDName(QString lname);
-  QString getCallerIDName();
-
-  void setCallerID(QString lname);
-  QString getCallerID();
-
-  void setState(ChannelState );
-  ChannelState getState();
-
-  void newConnection(Channel *, ConnectionNsp::state );
-  Connection *getConnectionPtr();
- signals:
-  void stateChanged();
+  Channel *getDestChannelPtr();
+  void setState(ConnectionNsp::state myConnectionState);
+  ConnectionNsp::state getState();
 
  private:
-  QString name;
-  QString uniqueid;
-  QString callerIDName;
-  QString callerID;
-  QString privilege;
-  ChannelState state;
-  Connection *connectionPtr;
+  Channel *sourcePtr;
+  Channel *destPtr;
+  ConnectionNsp::state connectionState;
+
 };
 
 #endif

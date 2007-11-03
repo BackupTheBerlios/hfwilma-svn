@@ -24,6 +24,7 @@
 #include <QTcpSocket>
 #include "astmanagerreadthread.h"
 #include "../data/channel.h"
+#include "../data/connection.h"
 
 enum StateType
   {
@@ -50,7 +51,10 @@ class AstManager : public QObject
    void processAstData(QString);
    void logoff();
  private:
+   ChannelState convertToChannelState(QString mystateString);
+
    QHash<QString,Channel*> channelsHash;
+   QHash<QString,Connection*> connectionsHash;
    StateType state;
    QTcpSocket *tcpSocket;
    AstManagerReadThread *astReadThread;

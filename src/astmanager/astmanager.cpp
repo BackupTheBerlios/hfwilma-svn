@@ -86,34 +86,76 @@ void AstManager::processAstData(QString str) {
 
     if (strHash.contains("event")) {
       if (strHash.value("event") == "newchannel") {
-	channelsHash.insert(strHash.value("uniqueid"), new Channel(strHash));
-	emit newChannel();
-	qDebug() << "Newchannel: " <<  strHash.value("uniqueid");
+	Channel *channel = new Channel();
+	channel->setName(strHash.value("channel"));
+	channel->setUniqueID(strHash.value("uniqueid"));
+	channel->setCallerID(strHash.value("callerid"));
+	channel->setCallerIDName(strHash.value("calleridname"));
+	channel->setState(convertToChannelState(strHash.value("state")));
+	channelsHash.insert(strHash.value("uniqueid"), channel);
+	
+	
       } else if (strHash.value("event") == "newstate") {
-	emit newState();
-	qDebug() << "Newstate  : " <<  strHash.value("uniqueid");
+	Channel *channel = channelsHash.value(strHash.value("uniqueid"));
+	if (channel != 0) {
+	  channel->setState(convertToChannelState(strHash.value("state")));
+	}	
+      } else if (strHash.value("event") == "newcallerid") {
+	Channel *channel = channelsHash.value(strHash.value("uniqueid"));
+	if (channel != 0) {
+	  channel->setCallerID(strHash.value("callerid"));
+	  channel->setCallerIDName(strHash.value("calleridname"));
+	}	
       } else if (strHash.value("event") == "newexten") {
 	emit newextension();
 	qDebug() << "Newextension : " <<  strHash.value("newexten");
       } else if (strHash.value("event") == "dial") {
-	Channel *srcchannel = channelsHash.value(strHash.value("srcuniqueid"));
+	// dest channel holds the connection
 	Channel *destchannel = channelsHash.value(strHash.value("destuniqueid"));
-						 
-	emit dial(srcchannel->getName() + " ruft " + destchannel->getName());
-	qDebug() << "Dial      : " << strHash.value("srcuniqueid") 
-                           << "->" << strHash.value("destuniqueid");
-	qDebug() <<              srcchannel->getName() + "(" +srcchannel->getCallerid() + ") ruft " + destchannel->getName() + "(" +destchannel->getCallerid() + ")";
+	destchannel->newConnection(channelsHash.value(strHash.value("srcuniqueid")), ConnectionNsp::dail);
+
       } else if (strHash.value("event") == "link") {
-	emit link("");
-	qDebug() << "Link      : " << strHash.value("uniqueid1") << "->" << strHash.value("Uniqueid2");
+	// guess uniqueid2 is destuniqueid
+	Channel *destchannel = channelsHash.value(strHash.value("uniqueid2"));
+	if (destchannel != 0) {
+	  Connection *connection = destchannel->getConnectionPtr();
+
+	  if (connection != 0) {
+	    connection->setState(ConnectionNsp::link);
+	  } else {
+	    qWarning() << "Internal error ... conection == NULL";
+	  }
+	} else {
+	  qWarning() << "Internal error ... destchannel == NULL";
+	}
+
       } else if (strHash.value("event") == "hangup") {
 	Channel *channel = channelsHash.value(strHash.value("uniqueid"));
 	channelsHash.remove(strHash.value("uniqueid"));
 	delete channel;
-	emit hangup("");
-	qDebug() << "Hangup    : " <<  strHash.value("uniqueid");
       }
-    }  
+    }
+     
 }
 
+ChannelState AstManager::convertToChannelState(QString mystateString){
+  ChannelState state = undef;
+  if (mystateString == "rsrvd") {
+    state = rsrvd;
+  } else if (mystateString == "dailing") {
+    state = dailing;
+  } else if (mystateString == "ringing") {
+    state = ringing;
+  } else if (mystateString == "up") {
+    state = up;
+  } else if (mystateString == "down") {
+    state = down;
+  } else {
+    qWaring() << "unknown ChannelState" << mystateString;
+  } 
 
+  qDebug() << "new Channel state" << mystateString;
+
+  return state;
+
+}

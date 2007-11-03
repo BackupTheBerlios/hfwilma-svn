@@ -18,19 +18,76 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */   
 
-#include <QHash>
+#include <QString>
+#include <QDebug>
 #include "channel.h"
 
-Channel::Channel(QHash<QString,QString> ldata)
+Channel::Channel()
 {
-  data = ldata;
+  connectionPtr = 0;
+  name.clear();
+  uniqueid.clear();
+  state = undef;
 }
 
-QString Channel::getName() {
+Channel::~Channel() {
+  if ( connectionPtr != 0 ) {
+    delete connectionPtr;
+  }
+  emit stateChanged();
+  qDebug() << "Hangup    : " <<  uniqueid;
+}
+void Channel::setName(QString lname) {
+  name = lname;
+  qDebug() << "setName    : " <<  name;
+
+}
+
+QString Channel::getName() {  
+  return name;
+}
+
+void Channel::setState(ChannelState lstate) {
+  state = lstate;
+}
+
+ChannelState Channel::getState() {
+  return state;
+}
+
+void Channel::newConnection(Channel *sourceChannel, ConnectionNsp::state mystate ) {
+  connectionPtr = new Connection( sourceChannel, this, mystate );
+}
+
+Connection *Channel::getConnectionPtr() {
+  return connectionPtr;
+}
+
+void Channel::setUniqueID(QString luniqueid) {
+  uniqueid = luniqueid;
+  qDebug() << "Uniqueid    : " <<  uniqueid;
+}
+
+QString Channel::getUniqueID() {
+  return uniqueid;
+}
+
+void Channel::setCallerIDName(QString lname){
+  callerIDName = lname;
+  qDebug() << "CallerIDName    : " <<  callerIDName;
+}
+
+QString Channel::getCallerIDName() {
+  return callerIDName;
+}
+
+void Channel::setCallerID(QString lname){
+  callerID=lname;
+  qDebug() << "CallerID    : " <<  callerID;
   
-  return data.value("channel");
 }
 
-QString Channel::getCallerid() {
-  return data.value("callerid");
+QString Channel::getCallerID() {
+  return callerID;
 }
+
