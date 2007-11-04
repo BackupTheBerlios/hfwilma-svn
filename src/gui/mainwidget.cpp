@@ -24,27 +24,42 @@
 #include <QPixmap>
 #include <QIcon>
 #include <QPainter>
-
-
+#include <QCoreApplication>
+#include <QSettings>
 
 MainWidget::MainWidget()
 {
+  QCoreApplication::setOrganizationName("hfeld");
+  QCoreApplication::setOrganizationDomain("hfeld.de");
+  QCoreApplication::setApplicationName("hfwilma");
   
- trayIcon = new QSystemTrayIcon(this);
- setIcon(5);
- connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
-             this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
- trayIcon->show();
- 
- astmanager = new AstManager();
+  textedit = new QTextEdit(this);
+  textedit->setLineWrapMode(QTextEdit::NoWrap);
+  textedit->setReadOnly(true);
+  connect(this,SIGNAL(newToolTip(QString)),textedit,SLOT(setText(QString)));
+  setCentralWidget (textedit);
 
- astmanager->connectAst("localhost",5038);
- astmanager->login("mfeld","");
- //astManager.logoff();
- astmanager->setEventFilter("on");
+  readSettings();
+  trayIcon = new QSystemTrayIcon(this);
+  setIcon(5);
+  connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+             this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
+
+  trayIcon->show();
  
- connect(astmanager,SIGNAL(somethingChanged()),this,SLOT(genToolTip()),Qt::DirectConnection);
+  astmanager = new AstManager();
+
+  QSettings settings;
+  settings.beginGroup("AstManager");
+  astmanager->connectAst(settings.value("host").toString(),settings.value("port").toInt());
+  astmanager->login(settings.value("username").toString(),settings.value("password").toString());
+  settings.endGroup();
+
+  astmanager->setEventFilter("on");
+  
+  connect(astmanager,SIGNAL(somethingChanged()),this,SLOT(genToolTip()),Qt::DirectConnection);
 }
+
 
 
 void MainWidget::iconActivated(QSystemTrayIcon::ActivationReason reason)
@@ -86,12 +101,21 @@ void MainWidget::closeEvent(QCloseEvent *event)
                                      "system tray. To terminate the program, "
                                      "choose <b>Quit</b> in the context menu "
                                      "of the system tray entry."));
+         writeSettings();
          hide();
          event->ignore();
-     }
+     } 
+
+   //  if (userReallyWantsToQuit()) {
+	 //      event->accept();
+	 // } else {
+	 // event->ignore();
+	 //}
+
 }
 
-void MainWidget::genToolTip() {
+QString MainWidget::collectToolTipData() {
+  
   QString tooltip;
   QHash<QString,Channel*> channelHash = astmanager->getChannelHash();
   
@@ -101,9 +125,50 @@ void MainWidget::genToolTip() {
     i.next();
     //    cout << i.key() << ": " << i.value() << endl;
     Channel *channel = i.value();
-    tooltip += channel->getName() + "\n";
+    Connection *connection = channel->getConnectionPtr();
+
+    tooltip += channel->getCallerID() + " / " + channel->getName() + " ";
+    
+    if (connection != 0) {
+      tooltip += " wird von ";
+      tooltip += connection->getSourceChannelPtr()->getCallerID();
+      tooltip += " angerufen.";
+    }
+    
+    tooltip += "\n";
+
   }
-  
   qDebug()<< "Tooltip" << tooltip;
+ 
+  return tooltip;
+}
+
+void MainWidget::genToolTip() {
+  QString tooltip=collectToolTipData();
+  emit newToolTip(tooltip);
   trayIcon->setToolTip(tooltip);
 }
+
+
+ void MainWidget::writeSettings()
+ {
+     QSettings settings;
+
+     settings.beginGroup("MainWindow");
+     settings.setValue("size", size());
+     settings.setValue("pos", pos());
+     settings.endGroup();
+ }
+
+ void MainWidget::readSettings()
+ {
+     QSettings settings;
+
+     settings.beginGroup("MainWindow");
+     resize(settings.value("size", QSize(400, 400)).toSize());
+     move(settings.value("pos", QPoint(200, 200)).toPoint());
+     settings.endGroup();
+ }
+
+
+ 

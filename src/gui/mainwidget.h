@@ -23,24 +23,28 @@
 #include <QWidget>
 #include <QSystemTrayIcon>
 #include "astmanager.h"
-
-
+#include <QTextEdit>
+#include <QMainWindow>
 //class QSystemTrayIcon;
 
-class MainWidget : public QWidget
+class MainWidget : public QMainWindow
 {
   Q_OBJECT;
 
  public:
   MainWidget();
- 
+ signals:
+  void newToolTip(QString);
   private slots:
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
   void genToolTip();
  private:
   QSystemTrayIcon * trayIcon;
   void closeEvent(QCloseEvent *event);
- 
+  void writeSettings();
+  void readSettings();
+  QTextEdit *textedit;
+  QString collectToolTipData();
   void setIcon(int index);
   AstManager *astmanager;
   
