@@ -91,3 +91,21 @@ QString Channel::getCallerID() {
   return callerID;
 }
 
+QString Channel::getStateString(){
+  QString mystateString="";
+  if (state == rsrvd) {
+    mystateString = tr("rsrvd");
+  } else if (state == dailing) {
+    mystateString = tr("dailing");
+  } else if (state == ringing) {
+    mystateString = tr("ringing");
+  } else if (state == up) {
+    mystateString = tr("up");
+  } else if (state == down) {
+    mystateString = tr("down");
+  } else {
+    qWarning() << "unknown ChannelState " << state;
+  } 
+
+  return mystateString;
+}

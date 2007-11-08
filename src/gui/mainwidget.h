@@ -25,6 +25,8 @@
 #include "astmanager.h"
 #include <QTextEdit>
 #include <QMainWindow>
+#include <QAction>
+#include <QMenu>
 //class QSystemTrayIcon;
 
 class MainWidget : public QMainWindow
@@ -47,7 +49,8 @@ class MainWidget : public QMainWindow
   QString collectToolTipData();
   void setIcon(int index);
   AstManager *astmanager;
-  
+  QAction *closeApp;
+  QMenu *trayMenu;
 };
 
 #endif // MAINWIDGET_H

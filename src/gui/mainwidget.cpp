@@ -45,6 +45,12 @@ MainWidget::MainWidget()
   connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
              this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
 
+  closeApp = new QAction ("Schliessen",this);
+  connect(closeApp,SIGNAL(triggered()),this,SLOT(quit()));
+  trayMenu = new QMenu(this);
+  trayMenu->addAction(closeApp);
+  trayIcon->setContextMenu(trayMenu);
+
   trayIcon->show();
  
   astmanager = new AstManager();
@@ -130,10 +136,12 @@ QString MainWidget::collectToolTipData() {
     tooltip += channel->getCallerID() + " / " + channel->getName() + " ";
     
     if (connection != 0) {
-      tooltip += " wird von ";
+      tooltip += tr(" is called by ");
       tooltip += connection->getSourceChannelPtr()->getCallerID();
-      tooltip += " angerufen.";
-    }
+      
+    } 
+      
+    tooltip += " ("+channel->getStateString()+")";
     
     tooltip += "\n";
 
@@ -147,6 +155,8 @@ void MainWidget::genToolTip() {
   QString tooltip=collectToolTipData();
   emit newToolTip(tooltip);
   trayIcon->setToolTip(tooltip);
+  if (!tooltip.isEmpty())
+    trayIcon->showMessage("Änderung",tooltip);
 }
 
 

@@ -5,6 +5,9 @@ QT += network
 CONFIG += debug qtestlib
 INCLUDEPATH += . astmanager data gui
 
+TRANSLATIONS = src_de.ts \
+
+
 SOURCES  = \
            main.cpp  \
            astmanager/astmanager.cpp \

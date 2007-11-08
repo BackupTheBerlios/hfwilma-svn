@@ -89,35 +89,38 @@ void AstManager::processAstData(QString str) {
 	channel->setCallerIDName(strHash.value("calleridname"));
 	channel->setState(convertToChannelState(strHash.value("state")));
 	channelsHash.insert(strHash.value("uniqueid"), channel);
-	
-	
+	emit somethingChanged();
       } else if (strHash.value("event") == "newstate") {
 	Channel *channel = channelsHash.value(strHash.value("uniqueid"));
 	if (channel != 0) {
 	  channel->setState(convertToChannelState(strHash.value("state")));
+	  emit somethingChanged();
 	}	
       } else if (strHash.value("event") == "newcallerid") {
 	Channel *channel = channelsHash.value(strHash.value("uniqueid"));
 	if (channel != 0) {
 	  channel->setCallerID(strHash.value("callerid"));
 	  channel->setCallerIDName(strHash.value("calleridname"));
+	  emit somethingChanged();
 	}	
       } else if (strHash.value("event") == "newexten") {
-	emit newextension();
+	//emit newextension();
 	qDebug() << "Newextension : " <<  strHash.value("newexten");
       } else if (strHash.value("event") == "dial") {
 	// dest channel holds the connection
 	Channel *destchannel = channelsHash.value(strHash.value("destuniqueid"));
 	destchannel->newConnection(channelsHash.value(strHash.value("srcuniqueid")), ConnectionNsp::dail);
+	emit somethingChanged();
 
       } else if (strHash.value("event") == "link") {
 	// guess uniqueid2 is destuniqueid
 	Channel *destchannel = channelsHash.value(strHash.value("uniqueid2"));
 	if (destchannel != 0) {
 	  Connection *connection = destchannel->getConnectionPtr();
-
+	  
 	  if (connection != 0) {
 	    connection->setState(ConnectionNsp::link);
+	    emit somethingChanged();
 	  } else {
 	    qWarning() << "Internal error ... conection == NULL";
 	  }
@@ -127,11 +130,13 @@ void AstManager::processAstData(QString str) {
 
       } else if (strHash.value("event") == "hangup") {
 	Channel *channel = channelsHash.value(strHash.value("uniqueid"));
+	channel->setState(down);
+	emit somethingChanged();
 	channelsHash.remove(strHash.value("uniqueid"));
 	delete channel;
+	emit somethingChanged();
       }
     }
-    emit somethingChanged();
 }
 
 QHash<QString,Channel*> AstManager::getChannelHash(){
@@ -153,9 +158,7 @@ ChannelState AstManager::convertToChannelState(QString mystateString){
   } else {
     qWarning() << "unknown ChannelState" << mystateString;
   } 
-
   qDebug() << "new Channel state" << mystateString;
-
   return state;
-
 }
+

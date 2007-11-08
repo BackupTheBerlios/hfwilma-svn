@@ -34,6 +34,9 @@ int main(int argc, char *argv[])
 
   MainWidget mainwidget;
   mainwidget.hide();
-  
+  QTranslator translator;
+  translator.load("src_de");
+  app.installTranslator(&translator);
+ 
   return app.exec();
 }

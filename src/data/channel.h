@@ -53,7 +53,7 @@ class Channel : public QObject
 
   void setState(ChannelState );
   ChannelState getState();
-
+  QString getStateString();
   void newConnection(Channel *, ConnectionNsp::state );
   Connection *getConnectionPtr();
  signals:
