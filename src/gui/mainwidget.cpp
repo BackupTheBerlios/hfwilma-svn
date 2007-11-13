@@ -46,13 +46,12 @@ MainWidget::MainWidget()
              this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
 
   closeApp = new QAction ("Schliessen",this);
-  connect(closeApp,SIGNAL(triggered()),this,SLOT(quit()));
+  connect(closeApp,SIGNAL(triggered()),this,SLOT(close()));
   trayMenu = new QMenu(this);
   trayMenu->addAction(closeApp);
   trayIcon->setContextMenu(trayMenu);
 
   trayIcon->show();
- 
   astmanager = new AstManager();
 
   QSettings settings;
@@ -101,7 +100,8 @@ void MainWidget::setIcon(int index)
 
 void MainWidget::closeEvent(QCloseEvent *event)
 {
-     if (trayIcon->isVisible()) {
+  
+     if (isVisible() && trayIcon->isVisible()) {
          QMessageBox::information(this, tr("Systray"),
                                   tr("The program will keep running in the "
                                      "system tray. To terminate the program, "
@@ -155,8 +155,8 @@ void MainWidget::genToolTip() {
   QString tooltip=collectToolTipData();
   emit newToolTip(tooltip);
   trayIcon->setToolTip(tooltip);
-  if (!tooltip.isEmpty())
-    trayIcon->showMessage("Änderung",tooltip);
+  //if (!tooltip.isEmpty())
+   // trayIcon->showMessage("Änderung",tooltip);
 }
 
 

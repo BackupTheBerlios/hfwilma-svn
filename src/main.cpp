@@ -33,9 +33,9 @@ int main(int argc, char *argv[])
   }
 
   MainWidget mainwidget;
-  mainwidget.hide();
+  mainwidget.show();
   QTranslator translator;
-  translator.load("src_de");
+  translator.load("src_de",QCoreApplication::applicationDirPath ());
   app.installTranslator(&translator);
  
   return app.exec();
